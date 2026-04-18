@@ -325,6 +325,46 @@ jobs:
             core.setOutput("serial", serial);
             core.setOutput("file", path);
 
+            // ============================
+            // STEP 2: UPDATE INDEX (games.json)
+            // ============================
+            const indexPath = "games.json";
+
+            let index;
+
+            if (fs.existsSync(indexPath)) {
+              index = JSON.parse(fs.readFileSync(indexPath, "utf-8"));
+            } else {
+              index = {
+                version: "1.0",
+                last_updated: new Date().toISOString().split("T")[0],
+                total_games: 0,
+                games: []
+              };
+            }
+
+            // use EXISTING in-memory game object (no reload)
+            const entry = {
+              serial: json.serial,
+              title: json.title,
+              slug: json.slug,
+              developer: json.developer || "",
+              year: json.year || 0,
+              genre: json.genre || [],
+              region: "Worldwide",
+              status: json.status || "",
+              thumbnail: `assets/boxart/${json.serial}-thumb.png`
+            };
+
+            // upsert (idempotent)
+            index.games = index.games.filter(g => g.serial !== game.serial);
+            index.games.push(entry);
+
+            index.total_games = index.games.length;
+            index.last_updated = new Date().toISOString().split("T")[0];
+
+            fs.writeFileSync(indexPath, JSON.stringify(index, null, 2));
+
       # ----------------------------
       # PR creation
       # ----------------------------
