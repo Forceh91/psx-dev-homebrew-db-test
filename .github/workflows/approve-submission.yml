@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@v4
 
       # ----------------------------
-      # Maintainer validation
+      # Maintainer check
       # ----------------------------
       - name: Validate maintainer
         uses: actions/github-script@v7
@@ -44,9 +44,9 @@ jobs:
             }
 
       # ----------------------------
-      # Parse issue → JSON
+      # Parse Issue Form properly
       # ----------------------------
-      - name: Parse issue + build JSON
+      - name: Parse issue → JSON
         uses: actions/github-script@v7
         id: build
         with:
@@ -60,19 +60,34 @@ jobs:
               issue_number
             });
 
-            const body = issue.body;
+            const body = issue.body || "";
 
-            // ---------------- helpers ----------------
-            function extract(label) {
-              const regex = new RegExp(`### ${label}\\n([\\s\\S]*?)(\\n###|$)`);
-              const match = body.match(regex);
-              return match ? match[1].trim() : null;
+            // =========================================================
+            // 🔥 ISSUE FORM SECTION PARSER (FIXES YOUR BUGS)
+            // =========================================================
+            function parseSections(body) {
+              const sections = {};
+              const blocks = body.split(/\n###\s*/);
+
+              for (const block of blocks) {
+                const lines = block.split("\n");
+                const title = lines[0]?.replace(/\*/g, "").trim();
+                const value = lines.slice(1).join("\n").trim();
+
+                if (title) sections[title] = value;
+              }
+
+              return sections;
             }
 
-            function extractList(label) {
-              const raw = extract(label);
+            const sections = parseSections(body);
+
+            // ---------------- helpers ----------------
+            function list(label) {
+              const raw = sections[label];
               if (!raw) return [];
-              return raw.split("\n")
+              return raw
+                .split("\n")
                 .map(l => l.replace(/^- /, "").trim())
                 .filter(Boolean);
             }
@@ -87,6 +102,7 @@ jobs:
 
             function parseEmulators(text) {
               if (!text) return {};
+
               const out = {};
               for (const line of text.split("\n")) {
                 const [k, v] = line.split(":");
@@ -96,20 +112,14 @@ jobs:
               return out;
             }
 
-            function parseHardware(text) {
-              if (!text) return { hardware_tested: false, hardware_notes: "" };
-              return {
-                hardware_tested: true,
-                hardware_notes: text.trim()
-              };
-            }
-
             function parseCredits(text) {
               if (!text) return {};
+
               const out = {};
               for (const line of text.split("\n")) {
                 const [role, people] = line.split(":");
                 if (!role || !people) continue;
+
                 out[normaliseKey(role)] = people
                   .split(",")
                   .map(p => p.trim())
@@ -118,16 +128,32 @@ jobs:
               return out;
             }
 
-            function extractCheckboxes(label) {
-              const raw = extract(label);
-              if (!raw) return [];
-              return raw
+            function parseHardware(text) {
+              if (!text) return { hardware_tested: false, hardware_notes: "" };
+
+              return {
+                hardware_tested: true,
+                hardware_notes: text.trim()
+              };
+            }
+
+            function checkboxes(text) {
+              if (!text) return [];
+
+              return text
                 .split("\n")
                 .map(l => l.replace(/^- \[.\]\s*/, "").trim())
                 .filter(Boolean);
             }
 
-            // ---------------- serial (collision-safe) ----------------
+            // ---------------- required fields ----------------
+            const title = sections["Game Title"] || sections["Game Title *"];
+
+            if (!title) {
+              core.setFailed("Missing Game Title (Issue Form parsing failed)");
+            }
+
+            // ---------------- collision-safe serial ----------------
             if (!fs.existsSync("games")) fs.mkdirSync("games");
 
             const files = fs.readdirSync("games");
@@ -140,44 +166,39 @@ jobs:
             const next = (nums.length ? Math.max(...nums) : 0) + 1;
             const serial = `PSXD-${String(next).padStart(4, "0")}`;
 
-            // ---------------- required fields ----------------
-            const title = extract("Game Title *");
+            // ---------------- hardware ----------------
+            const hw = parseHardware(sections["Hardware Tested"]);
 
-            if (!title) {
-              core.setFailed("Missing Game Title");
-            }
-
-            const hw = parseHardware(extract("Hardware Tested?"));
-
+            // ---------------- build JSON ----------------
             const json = {
               serial,
               title,
               slug: title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-              developer: extract("Developer / Team Name *"),
-              publisher: extract("Developer / Team Name *"),
-              year: Number(extract("Release Year *")),
-              genre: extractList("Primary Genre *"),
-              players: extract("Player Count") || "1",
-              status: extract("Release Status *"),
-              description: extract("Game Description *"),
-              download_url: extract("Download URL *"),
-              source_url: extract("Source Code URL"),
+              developer: sections["Developer / Team Name"] || "",
+              publisher: sections["Developer / Team Name"] || "",
+              year: Number(sections["Release Year"]),
+              genre: list("Primary Genre"),
+              players: sections["Player Count"] || "1",
+              status: sections["Release Status"],
+              description: sections["Game Description"],
+              download_url: sections["Download URL"],
+              source_url: sections["Source Code URL"] || "",
 
-              disc_image_format: extractCheckboxes("Available disc image formats"),
+              disc_image_format: checkboxes(
+                sections["Available disc image formats"]
+              ),
 
               emulator_compatibility: parseEmulators(
-                extract("Emulator Compatibility")
+                sections["Emulator Compatibility"]
               ),
 
               hardware_tested: hw.hardware_tested,
               hardware_notes: hw.hardware_notes,
 
-              credits: parseCredits(
-                extract("Credits")
-              ),
+              credits: parseCredits(sections["Credits"]),
 
               links: {
-                website: extract("Website / itch.io / Discord") || ""
+                website: sections["Website / itch.io / Discord"] || ""
               },
 
               screenshots: [],
@@ -211,7 +232,7 @@ jobs:
             Closes #${{ github.event.issue.number }}
 
       # ----------------------------
-      # Comment back
+      # Comment back on issue
       # ----------------------------
       - name: Comment on issue
         uses: actions/github-script@v7
