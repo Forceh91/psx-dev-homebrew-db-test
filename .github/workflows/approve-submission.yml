@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@v4
 
       # ----------------------------
-      # Maintainer check
+      # Maintainer validation
       # ----------------------------
       - name: Validate maintainer
         uses: actions/github-script@v7
@@ -44,9 +44,9 @@ jobs:
             }
 
       # ----------------------------
-      # Parse Issue Form properly
+      # Parse Issue Form → JSON
       # ----------------------------
-      - name: Parse issue → JSON
+      - name: Parse issue + build JSON
         uses: actions/github-script@v7
         id: build
         with:
@@ -63,18 +63,27 @@ jobs:
             const body = issue.body || "";
 
             // =========================================================
-            // 🔥 ISSUE FORM SECTION PARSER (FIXES YOUR BUGS)
+            // 🧠 ISSUE FORM PARSER (ROBUST VERSION)
             // =========================================================
+
             function parseSections(body) {
               const sections = {};
               const blocks = body.split(/\n###\s*/);
 
               for (const block of blocks) {
                 const lines = block.split("\n");
-                const title = lines[0]?.replace(/\*/g, "").trim();
+
+                const rawTitle = lines[0];
+                if (!rawTitle) continue;
+
+                const key = rawTitle
+                  .replace(/\*/g, "")
+                  .trim()
+                  .toLowerCase();
+
                 const value = lines.slice(1).join("\n").trim();
 
-                if (title) sections[title] = value;
+                sections[key] = value;
               }
 
               return sections;
@@ -82,14 +91,19 @@ jobs:
 
             const sections = parseSections(body);
 
-            // ---------------- helpers ----------------
-            function list(label) {
-              const raw = sections[label];
-              if (!raw) return [];
-              return raw
+            function val(key) {
+              const v = sections[key];
+              if (!v || v === "_No response_") return null;
+              return v;
+            }
+
+            function parseCheckboxes(text) {
+              if (!text) return [];
+
+              return text
                 .split("\n")
-                .map(l => l.replace(/^- /, "").trim())
-                .filter(Boolean);
+                .map(l => l.replace(/- \[.\]\s*/, "").trim())
+                .filter(l => l && l !== "_No response_");
             }
 
             function normaliseKey(str) {
@@ -104,11 +118,14 @@ jobs:
               if (!text) return {};
 
               const out = {};
+
               for (const line of text.split("\n")) {
                 const [k, v] = line.split(":");
                 if (!k || !v) continue;
+
                 out[normaliseKey(k.trim())] = v.trim();
               }
+
               return out;
             }
 
@@ -116,20 +133,24 @@ jobs:
               if (!text) return {};
 
               const out = {};
+
               for (const line of text.split("\n")) {
                 const [role, people] = line.split(":");
                 if (!role || !people) continue;
 
-                out[normaliseKey(role)] = people
+                out[normaliseKey(role.trim())] = people
                   .split(",")
                   .map(p => p.trim())
                   .filter(Boolean);
               }
+
               return out;
             }
 
             function parseHardware(text) {
-              if (!text) return { hardware_tested: false, hardware_notes: "" };
+              if (!text || text === "_No response_") {
+                return { hardware_tested: false, hardware_notes: "" };
+              }
 
               return {
                 hardware_tested: true,
@@ -137,23 +158,18 @@ jobs:
               };
             }
 
-            function checkboxes(text) {
-              if (!text) return [];
-
-              return text
-                .split("\n")
-                .map(l => l.replace(/^- \[.\]\s*/, "").trim())
-                .filter(Boolean);
-            }
-
-            // ---------------- required fields ----------------
-            const title = sections["Game Title"] || sections["Game Title *"];
+            // ----------------------------
+            // REQUIRED FIELDS
+            // ----------------------------
+            const title = val("game title");
 
             if (!title) {
               core.setFailed("Missing Game Title (Issue Form parsing failed)");
             }
 
-            // ---------------- collision-safe serial ----------------
+            // ----------------------------
+            // SERIAL (collision-safe)
+            // ----------------------------
             if (!fs.existsSync("games")) fs.mkdirSync("games");
 
             const files = fs.readdirSync("games");
@@ -166,39 +182,47 @@ jobs:
             const next = (nums.length ? Math.max(...nums) : 0) + 1;
             const serial = `PSXD-${String(next).padStart(4, "0")}`;
 
-            // ---------------- hardware ----------------
-            const hw = parseHardware(sections["Hardware Tested"]);
+            // ----------------------------
+            // HARDWARE
+            // ----------------------------
+            const hw = parseHardware(val("hardware tested"));
 
-            // ---------------- build JSON ----------------
+            // ----------------------------
+            // BUILD JSON
+            // ----------------------------
             const json = {
               serial,
               title,
               slug: title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-              developer: sections["Developer / Team Name"] || "",
-              publisher: sections["Developer / Team Name"] || "",
-              year: Number(sections["Release Year"]),
-              genre: list("Primary Genre"),
-              players: sections["Player Count"] || "1",
-              status: sections["Release Status"],
-              description: sections["Game Description"],
-              download_url: sections["Download URL"],
-              source_url: sections["Source Code URL"] || "",
 
-              disc_image_format: checkboxes(
-                sections["Available disc image formats"]
+              developer: val("developer / team name"),
+              publisher: val("developer / team name"),
+
+              year: Number(val("release year")),
+              genre: val("primary genre")?.split("\n") || [],
+
+              players: val("player count") || "1",
+              status: val("release status"),
+              description: val("game description"),
+
+              download_url: val("download url"),
+              source_url: val("source code url"),
+
+              disc_image_format: parseCheckboxes(
+                val("available disc image formats")
               ),
 
               emulator_compatibility: parseEmulators(
-                sections["Emulator Compatibility"]
+                val("emulator compatibility")
               ),
 
               hardware_tested: hw.hardware_tested,
               hardware_notes: hw.hardware_notes,
 
-              credits: parseCredits(sections["Credits"]),
+              credits: parseCredits(val("credits")),
 
               links: {
-                website: sections["Website / itch.io / Discord"] || ""
+                website: val("website / itch.io / discord") || ""
               },
 
               screenshots: [],
@@ -232,7 +256,7 @@ jobs:
             Closes #${{ github.event.issue.number }}
 
       # ----------------------------
-      # Comment back on issue
+      # Comment back
       # ----------------------------
       - name: Comment on issue
         uses: actions/github-script@v7
