@@ -50,6 +50,23 @@ body:
     validations:
       required: true
 
+  - type: checkboxes
+    id: region
+    attributes:
+      label: "Region *"
+      description: "Which regions is this release intended for?"
+      options:
+        - label: "NTSC-U (North America)"
+          required: false
+        - label: "NTSC-J (Japan)"
+          required: false
+        - label: "PAL (Europe / Australia)"
+          required: false
+        - label: "Worldwide"
+          required: false
+    validations:
+      required: true
+
   - type: dropdown
     id: genre
     attributes:
@@ -99,6 +116,13 @@ body:
       required: true
 
   - type: input
+    id: trailer_url
+    attributes:
+      label: "Trailer URL"
+      description: "YouTube link to a trailer or gameplay video, if you have one"
+      placeholder: "https://www.youtube.com/watch?v=..."
+
+  - type: input
     id: source_url
     attributes:
       label: "Source Code URL"
@@ -122,7 +146,8 @@ body:
       description: "List any emulators tested and how well the game runs"
       placeholder: |
         DuckStation: Perfect
-        PCSX-Redux: Perfect
+        RetroArch (Beetle PSX): Good
+        ePSXe: Untested
 
   - type: input
     id: hardware_tested
@@ -136,10 +161,36 @@ body:
       value: |
         ## Artwork
 
-        Please attach any artwork to this issue as image files. We accept:
-        - **Box art** (front, back, spine) — recommended 750x1050px (jewel case) or 1050x750px (longbox)
-        - **Disc art** — recommended 512x512px
-        - **Screenshots** — at least 1 required, recommended 1024x768px or 320x240px native
+        Drag and drop images directly into each field below. GitHub will upload them and insert a link automatically.
+        PNG or JPG only. Do not submit artwork derived from Sony's trade dress or copyrighted assets.
+
+  - type: textarea
+    id: artwork_boxart
+    attributes:
+      label: "Box Art"
+      description: "Front cover required. Back and spine optional. Recommended size: 750×1050px (jewel case)."
+      placeholder: |
+        Drag and drop your box art images here.
+
+        Front cover: 
+        Back cover: 
+        Spine:
+
+  - type: textarea
+    id: artwork_disc
+    attributes:
+      label: "Disc Art"
+      description: "Optional but encouraged. Recommended size: 512×512px, circular design."
+      placeholder: |
+        Drag and drop your disc art image here.
+
+  - type: textarea
+    id: artwork_screenshots
+    attributes:
+      label: "Screenshots"
+      description: "At least 1 required. Recommended: 1024×768px, or native PS1 resolution (320×240px). In-game screenshots only, no title screen spam."
+      placeholder: |
+        Drag and drop your screenshots here. Add as many as you like.
 
   - type: textarea
     id: credits
