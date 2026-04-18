@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: PSX.DEV Community
+    url: https://psx.dev
+    about: Visit the PSX.DEV community for general PS1 homebrew discussion
+  - name: Serial Number Format
+    url: https://github.com/Forceh91/psx-dev-homebrew-db/blob/main/SERIAL_FORMAT.md
+    about: Learn about the PSXD serial number format before submitting

@@ -1,0 +1,40 @@
+{
+  "version": "1.0",
+  "last_updated": "2025-01-01",
+  "total_games": 3,
+  "games": [
+    {
+      "serial": "PSXD-0001",
+      "title": "Lunar Drift",
+      "slug": "lunar-drift",
+      "developer": "PixelBrew Studios",
+      "year": 2023,
+      "genre": ["Racing", "Arcade"],
+      "region": "Worldwide",
+      "status": "Complete",
+      "thumbnail": "assets/boxart/PSXD-0001-thumb.png"
+    },
+    {
+      "serial": "PSXD-0002",
+      "title": "Crypts of Karanor",
+      "slug": "crypts-of-karanor",
+      "developer": "RetroForge Dev",
+      "year": 2024,
+      "genre": ["RPG", "Dungeon Crawler"],
+      "region": "Worldwide",
+      "status": "Complete",
+      "thumbnail": "assets/boxart/PSXD-0002-thumb.png"
+    },
+    {
+      "serial": "PSXD-0003",
+      "title": "Starfield Zero",
+      "slug": "starfield-zero",
+      "developer": "PSX Collective",
+      "year": 2024,
+      "genre": ["Shoot 'em Up"],
+      "region": "Worldwide",
+      "status": "Demo",
+      "thumbnail": "assets/boxart/PSXD-0003-thumb.png"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "serial": "PSXD-0001",
+  "title": "Lunar Drift",
+  "slug": "lunar-drift",
+  "developer": "PixelBrew Studios",
+  "publisher": "PixelBrew Studios",
+  "year": 2023,
+  "genre": ["Racing", "Arcade"],
+  "players": "1-2",
+  "region": "Worldwide",
+  "status": "Complete",
+  "language": ["English"],
+  "description": "A fast-paced arcade racer set on the lunar surface. Race across craters and valleys in hand-crafted tracks, with a drift mechanic inspired by classic PS1 racers. Features a 2-player split-screen mode.",
+  "release_date": "2023-06-15",
+  "version": "1.2.0",
+  "download_url": "https://github.com/pixelbrew/lunar-drift/releases",
+  "source_url": "https://github.com/pixelbrew/lunar-drift",
+  "disc_image_format": ["BIN/CUE", "ISO"],
+  "emulator_compatibility": {
+    "duckstation": "Perfect",
+    "pcsx_redux": "Perfect"
+  },
+  "hardware_tested": true,
+  "hardware_notes": "Tested on SCPH-7502 (PAL). Use FreePSXBoot for chipped consoles.",
+  "screenshots": [
+    "assets/screenshots/PSXD-0001-01.png",
+    "assets/screenshots/PSXD-0001-02.png",
+    "assets/screenshots/PSXD-0001-03.png"
+  ],
+  "boxart": {
+    "front": "assets/boxart/PSXD-0001-front.png",
+    "back": "assets/boxart/PSXD-0001-back.png",
+    "disc": "assets/boxart/PSXD-0001-disc.png"
+  },
+  "credits": {
+    "programming": ["Alice Mercer"],
+    "art": ["Bob Tanaka"],
+    "music": ["Clara Voss"],
+    "testing": ["NekoPS1", "RetroHawk"]
+  },
+  "tags": ["racing", "arcade", "split-screen", "lunar", "drift"],
+  "links": {
+    "website": "",
+    "discord": "",
+    "itch_io": "https://pixelbrew.itch.io/lunar-drift"
+  },
+  "submitted_by": "PixelBrew",
+  "submission_date": "2023-07-01",
+  "last_updated": "2024-02-10"
+}

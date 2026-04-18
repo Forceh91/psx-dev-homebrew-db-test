@@ -1,0 +1,98 @@
+name: Validate Database
+
+on:
+  push:
+    paths:
+      - 'games.json'
+      - 'games/*.json'
+  pull_request:
+    paths:
+      - 'games.json'
+      - 'games/*.json'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    name: Validate JSON files
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate games.json
+        run: |
+          python3 -c "
+          import json, sys
+
+          with open('games.json') as f:
+              data = json.load(f)
+
+          games = data.get('games', [])
+          serials = [g['serial'] for g in games]
+          
+          # Check serial format
+          import re
+          pattern = re.compile(r'^PSXD-\d{4}$')
+          bad = [s for s in serials if not pattern.match(s)]
+          if bad:
+              print(f'ERROR: Invalid serial format: {bad}')
+              sys.exit(1)
+
+          # Check for duplicates
+          if len(serials) != len(set(serials)):
+              print('ERROR: Duplicate serials found!')
+              sys.exit(1)
+
+          print(f'OK: games.json valid — {len(games)} games, serials look good')
+          "
+
+      - name: Validate per-game JSON files
+        run: |
+          python3 -c "
+          import json, os, re, sys
+          
+          pattern = re.compile(r'^PSXD-\d{4}$')
+          errors = []
+          
+          for fname in os.listdir('games'):
+              if not fname.endswith('.json'):
+                  continue
+              path = f'games/{fname}'
+              try:
+                  with open(path) as f:
+                      data = json.load(f)
+              except json.JSONDecodeError as e:
+                  errors.append(f'{fname}: JSON parse error — {e}')
+                  continue
+              
+              required = ['serial', 'title', 'developer', 'year', 'status']
+              for field in required:
+                  if field not in data:
+                      errors.append(f'{fname}: Missing required field \"{field}\"')
+              
+              if 'serial' in data and not pattern.match(data['serial']):
+                  errors.append(f'{fname}: Invalid serial format \"{data[\"serial\"]}\"')
+          
+          if errors:
+              for e in errors:
+                  print(f'ERROR: {e}')
+              sys.exit(1)
+          
+          print('OK: All per-game JSON files valid')
+          "
+
+      - name: Check total_games count
+        run: |
+          python3 -c "
+          import json, os, sys
+
+          with open('games.json') as f:
+              index = json.load(f)
+
+          listed = len(index.get('games', []))
+          declared = index.get('total_games', -1)
+          actual_files = len([f for f in os.listdir('games') if f.endswith('.json')])
+
+          if listed != declared:
+              print(f'WARNING: total_games ({declared}) does not match games array length ({listed})')
+
+          print(f'OK: {listed} games in index, {actual_files} game files on disk')
+          "

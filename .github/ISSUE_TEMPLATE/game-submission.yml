@@ -1,0 +1,171 @@
+name: "Submit a Homebrew Game"
+description: "Submit your PS1 homebrew game to the PlayStation Homebrew Database"
+title: "[SUBMISSION] Your Game Title Here"
+labels: ["submission", "pending-review"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Welcome to the PlayStation Homebrew Database!
+
+        Please fill out this form carefully. All fields marked * are required.
+        A maintainer will review your submission and assign you a **PSXD serial number**.
+
+        > **Serial format:** `PSXD-XXXX` — e.g. `PSXD-0042`
+
+  - type: input
+    id: title
+    attributes:
+      label: "Game Title *"
+      placeholder: "e.g. Crypts of Karanor"
+    validations:
+      required: true
+
+  - type: input
+    id: developer
+    attributes:
+      label: "Developer / Team Name *"
+      placeholder: "e.g. RetroForge Dev"
+    validations:
+      required: true
+
+  - type: input
+    id: year
+    attributes:
+      label: "Release Year *"
+      placeholder: "e.g. 2024"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: status
+    attributes:
+      label: "Release Status *"
+      options:
+        - "Complete"
+        - "Demo"
+        - "Beta"
+        - "Work In Progress"
+        - "Cancelled"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: genre
+    attributes:
+      label: "Primary Genre *"
+      multiple: true
+      options:
+        - "Action"
+        - "Adventure"
+        - "Arcade"
+        - "Beat 'em Up"
+        - "Fighting"
+        - "Horror"
+        - "Platformer"
+        - "Puzzle"
+        - "Racing"
+        - "RPG"
+        - "Shoot 'em Up"
+        - "Simulation"
+        - "Sports"
+        - "Strategy"
+        - "Other"
+    validations:
+      required: true
+
+  - type: input
+    id: players
+    attributes:
+      label: "Player Count"
+      placeholder: "e.g. 1, 1-2, 1-4"
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Game Description *"
+      description: "A short description of your game (2-5 sentences)"
+      placeholder: "Describe your game..."
+    validations:
+      required: true
+
+  - type: input
+    id: download_url
+    attributes:
+      label: "Download URL *"
+      description: "Link to where the game can be downloaded (GitHub releases, itch.io, etc.)"
+      placeholder: "https://..."
+    validations:
+      required: true
+
+  - type: input
+    id: source_url
+    attributes:
+      label: "Source Code URL"
+      description: "Link to source code, if public"
+      placeholder: "https://github.com/..."
+
+  - type: checkboxes
+    id: formats
+    attributes:
+      label: "Available disc image formats"
+      options:
+        - label: "BIN/CUE"
+        - label: "ISO"
+        - label: "PBP (PSP/Vita)"
+        - label: "CHD"
+
+  - type: textarea
+    id: emulator_compat
+    attributes:
+      label: "Emulator Compatibility"
+      description: "List any emulators tested and how well the game runs"
+      placeholder: |
+        DuckStation: Perfect
+        PCSX-Redux: Perfect
+
+  - type: input
+    id: hardware_tested
+    attributes:
+      label: "Hardware Tested?"
+      description: "If tested on real hardware, which console model?"
+      placeholder: "e.g. SCPH-7502 (PAL), SCPH-1001 (NTSC-U)"
+
+  - type: markdown
+    attributes:
+      value: |
+        ## Artwork
+
+        Please attach any artwork to this issue as image files. We accept:
+        - **Box art** (front, back, spine) — recommended 750x1050px (jewel case) or 1050x750px (longbox)
+        - **Disc art** — recommended 512x512px
+        - **Screenshots** — at least 1 required, recommended 1024x768px or 320x240px native
+
+  - type: textarea
+    id: credits
+    attributes:
+      label: "Credits"
+      description: "Who worked on the game?"
+      placeholder: |
+        Programming: Jane Doe
+        Art: John Smith
+        Music: DJ RetroWave
+        Testing: NekoPS1
+
+  - type: input
+    id: website
+    attributes:
+      label: "Website / itch.io / Discord"
+      placeholder: "https://..."
+
+  - type: checkboxes
+    id: agreement
+    attributes:
+      label: "Submission Agreement *"
+      options:
+        - label: "This is an original homebrew game, not a pirated or commercially licensed title."
+          required: true
+        - label: "I have the right to submit this game and its associated artwork."
+          required: true
+        - label: "I agree to the database's submission guidelines."
+          required: true

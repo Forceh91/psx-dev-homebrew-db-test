@@ -1,0 +1,226 @@
+name: Approve Submission → Generate Game PR
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: serial-generator
+  cancel-in-progress: false
+
+jobs:
+  approve:
+    if: |
+      github.event.issue != null &&
+      contains(github.event.comment.body, '!approve')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # ----------------------------
+      # Maintainer validation
+      # ----------------------------
+      - name: Validate maintainer
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const commenter = context.payload.comment.user.login;
+
+            const { data: collabs } = await github.rest.repos.listCollaborators({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+
+            const isMaintainer = collabs.some(u => u.login === commenter);
+
+            if (!isMaintainer) {
+              core.setFailed(`User ${commenter} is not a maintainer`);
+            }
+
+      # ----------------------------
+      # Parse issue → JSON
+      # ----------------------------
+      - name: Parse issue + build JSON
+        uses: actions/github-script@v7
+        id: build
+        with:
+          script: |
+            const fs = require("fs");
+
+            const issue_number = context.payload.issue.number;
+
+            const { data: issue } = await github.rest.issues.get({
+              ...context.repo,
+              issue_number
+            });
+
+            const body = issue.body;
+
+            // ---------------- helpers ----------------
+            function extract(label) {
+              const regex = new RegExp(`### ${label}\\n([\\s\\S]*?)(\\n###|$)`);
+              const match = body.match(regex);
+              return match ? match[1].trim() : null;
+            }
+
+            function extractList(label) {
+              const raw = extract(label);
+              if (!raw) return [];
+              return raw.split("\n")
+                .map(l => l.replace(/^- /, "").trim())
+                .filter(Boolean);
+            }
+
+            function normaliseKey(str) {
+              return str
+                .toLowerCase()
+                .replace(/\s+/g, "_")
+                .replace(/-/g, "_")
+                .replace(/[^a-z0-9_]/g, "");
+            }
+
+            function parseEmulators(text) {
+              if (!text) return {};
+              const out = {};
+              for (const line of text.split("\n")) {
+                const [k, v] = line.split(":");
+                if (!k || !v) continue;
+                out[normaliseKey(k.trim())] = v.trim();
+              }
+              return out;
+            }
+
+            function parseHardware(text) {
+              if (!text) return { hardware_tested: false, hardware_notes: "" };
+              return {
+                hardware_tested: true,
+                hardware_notes: text.trim()
+              };
+            }
+
+            function parseCredits(text) {
+              if (!text) return {};
+              const out = {};
+              for (const line of text.split("\n")) {
+                const [role, people] = line.split(":");
+                if (!role || !people) continue;
+                out[normaliseKey(role)] = people
+                  .split(",")
+                  .map(p => p.trim())
+                  .filter(Boolean);
+              }
+              return out;
+            }
+
+            function extractCheckboxes(label) {
+              const raw = extract(label);
+              if (!raw) return [];
+              return raw
+                .split("\n")
+                .map(l => l.replace(/^- \[.\]\s*/, "").trim())
+                .filter(Boolean);
+            }
+
+            // ---------------- serial (collision-safe) ----------------
+            if (!fs.existsSync("games")) fs.mkdirSync("games");
+
+            const files = fs.readdirSync("games");
+
+            const nums = files
+              .map(f => f.match(/PSXD-(\d+)/))
+              .filter(Boolean)
+              .map(m => parseInt(m[1], 10));
+
+            const next = (nums.length ? Math.max(...nums) : 0) + 1;
+            const serial = `PSXD-${String(next).padStart(4, "0")}`;
+
+            // ---------------- required fields ----------------
+            const title = extract("Game Title *");
+
+            if (!title) {
+              core.setFailed("Missing Game Title");
+            }
+
+            const hw = parseHardware(extract("Hardware Tested?"));
+
+            const json = {
+              serial,
+              title,
+              slug: title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+              developer: extract("Developer / Team Name *"),
+              publisher: extract("Developer / Team Name *"),
+              year: Number(extract("Release Year *")),
+              genre: extractList("Primary Genre *"),
+              players: extract("Player Count") || "1",
+              status: extract("Release Status *"),
+              description: extract("Game Description *"),
+              download_url: extract("Download URL *"),
+              source_url: extract("Source Code URL"),
+
+              disc_image_format: extractCheckboxes("Available disc image formats"),
+
+              emulator_compatibility: parseEmulators(
+                extract("Emulator Compatibility")
+              ),
+
+              hardware_tested: hw.hardware_tested,
+              hardware_notes: hw.hardware_notes,
+
+              credits: parseCredits(
+                extract("Credits")
+              ),
+
+              links: {
+                website: extract("Website / itch.io / Discord") || ""
+              },
+
+              screenshots: [],
+              boxart: {},
+              tags: [],
+
+              submitted_by: issue.user.login,
+              submission_date: new Date().toISOString().split("T")[0],
+              last_updated: new Date().toISOString().split("T")[0]
+            };
+
+            const path = `games/${serial}.json`;
+            fs.writeFileSync(path, JSON.stringify(json, null, 2));
+
+            core.setOutput("serial", serial);
+            core.setOutput("file", path);
+
+      # ----------------------------
+      # Create PR
+      # ----------------------------
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: submission/${{ steps.build.outputs.serial }}
+          title: "New Game Submission: ${{ steps.build.outputs.serial }}"
+          body: |
+            Auto-generated submission.
+
+            **Serial:** ${{ steps.build.outputs.serial }}
+
+            Closes #${{ github.event.issue.number }}
+
+      # ----------------------------
+      # Comment back
+      # ----------------------------
+      - name: Comment on issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const serial = "${{ steps.build.outputs.serial }}";
+
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: context.issue.number,
+              body: `✅ Approved and processed as **${serial}**.\n\nA pull request has been created for review.`
+            });

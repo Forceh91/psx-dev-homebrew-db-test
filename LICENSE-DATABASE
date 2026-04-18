@@ -1,0 +1,63 @@
+Creative Commons Attribution 4.0 International License (CC BY 4.0)
+
+This license applies to the database content contained in this repository,
+including but not limited to:
+
+  - Game entries (games/*.json, games.json)
+  - Box art and disc artwork (assets/boxart/)
+  - Screenshots (assets/screenshots/)
+
+The site code (index.html) is licensed separately under the MIT License.
+See LICENSE for details.
+
+-------------------------------------------------------------------------------
+
+Creative Commons Attribution 4.0 International
+
+By exercising the Licensed Rights (defined below), You accept and agree to be
+bound by the terms and conditions of this Creative Commons Attribution 4.0
+International Public License ("Public License").
+
+You are free to:
+
+  Share — copy and redistribute the material in any medium or format for any
+  purpose, even commercially.
+
+  Adapt — remix, transform, and build upon the material for any purpose, even
+  commercially.
+
+The licensor cannot revoke these freedoms as long as you follow the license
+terms.
+
+Under the following terms:
+
+  Attribution — You must give appropriate credit to the original contributor(s),
+  provide a link to the license, and indicate if changes were made. You may do
+  so in any reasonable manner, but not in any way that suggests the licensor
+  endorses you or your use.
+
+  No additional restrictions — You may not apply legal terms or technological
+  measures that legally restrict others from doing anything the license permits.
+
+Notices:
+
+  You do not have to comply with the license for elements of the material in
+  the public domain or where your applicable exception or limitation applies.
+
+  No warranties are given. The license may not give you all of the permissions
+  necessary for your intended use. For example, other rights such as publicity,
+  privacy, or moral rights may limit how you use the material.
+
+-------------------------------------------------------------------------------
+
+Individual game entries and artwork remain the intellectual property of their
+respective creators. By submitting content to this database, contributors agree
+to license their submission under CC BY 4.0, allowing it to be freely shared
+and reproduced with attribution.
+
+Submitted artwork must be original work created by the contributor, or work
+the contributor has the right to license. Do not submit artwork derived from
+Sony Computer Entertainment's trade dress, copyrighted assets, or any other
+third-party copyrighted material without appropriate rights.
+
+Full license text: https://creativecommons.org/licenses/by/4.0/legalcode

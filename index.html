@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PSXD — PSX.DEV Homebrew Database</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ps-black: #0a0a0f;
+      --ps-dark: #0f0f1a;
+      --ps-panel: #13131f;
+      --ps-card: #1a1a2e;
+      --ps-border: #2a2a4a;
+      --ps-border-bright: #3a3a6a;
+      --ps-blue: #006fff;
+      --ps-blue-dim: #0044bb;
+      --ps-teal: #00d4aa;
+      --ps-teal-dim: #009977;
+      --ps-yellow: #f5c518;
+      --ps-red: #cc2222;
+      --ps-white: #e8e8f0;
+      --ps-muted: #7070a0;
+      --ps-scanline: rgba(0, 0, 0, 0.35);
+      --font-mono: 'Share Tech Mono', monospace;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-body: 'IBM Plex Sans', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--ps-black);
+      color: var(--ps-white);
+      font-family: var(--font-body);
+      font-weight: 300;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── CRT OVERLAY ─── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        var(--ps-scanline) 2px,
+        var(--ps-scanline) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.15;
+    }
+
+    /* ─── TOP BAR ─── */
+    .topbar {
+      background: var(--ps-dark);
+      border-bottom: 1px solid var(--ps-border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 44px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .serial-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ps-teal);
+      letter-spacing: 0.1em;
+      border: 1px solid var(--ps-teal-dim);
+      padding: 3px 8px;
+      border-radius: 2px;
+    }
+
+    .topbar-links {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+    }
+
+    .topbar-links a {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ps-muted);
+      text-decoration: none;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.15s;
+    }
+
+    .topbar-links a:hover { color: var(--ps-white); }
+
+    .github-link {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ps-blue);
+      text-decoration: none;
+      border: 1px solid var(--ps-blue-dim);
+      padding: 3px 10px;
+      border-radius: 2px;
+      letter-spacing: 0.08em;
+      transition: all 0.15s;
+    }
+
+    .github-link:hover {
+      background: var(--ps-blue-dim);
+      color: white;
+    }
+
+    /* ─── HERO ─── */
+    .hero {
+      background: var(--ps-dark);
+      border-bottom: 1px solid var(--ps-border);
+      padding: 4rem 2rem 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--ps-blue), var(--ps-teal));
+    }
+
+    .hero-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ps-teal);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(3rem, 8vw, 6.5rem);
+      letter-spacing: 0.04em;
+      line-height: 0.9;
+      color: var(--ps-white);
+      margin-bottom: 0.5rem;
+    }
+
+    .hero h1 span {
+      color: var(--ps-blue);
+    }
+
+    .hero-sub {
+      font-size: 14px;
+      color: var(--ps-muted);
+      font-family: var(--font-mono);
+      letter-spacing: 0.06em;
+      margin-top: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 2.5rem;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      color: var(--ps-white);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ps-muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .hero-graphic {
+      position: absolute;
+      right: 2rem;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.06;
+      font-family: var(--font-display);
+      font-size: 18rem;
+      color: var(--ps-blue);
+      line-height: 1;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* ─── MAIN LAYOUT ─── */
+    .main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* ─── CONTROLS ─── */
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search-wrap {
+      flex: 1;
+      min-width: 200px;
+      position: relative;
+    }
+
+    .search-wrap::before {
+      content: '▶';
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--ps-teal);
+      font-size: 10px;
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--ps-panel);
+      border: 1px solid var(--ps-border);
+      color: var(--ps-white);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 10px 12px 10px 32px;
+      outline: none;
+      border-radius: 2px;
+      letter-spacing: 0.06em;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus { border-color: var(--ps-teal); }
+    .search-input::placeholder { color: var(--ps-muted); }
+
+    .filter-select {
+      background: var(--ps-panel);
+      border: 1px solid var(--ps-border);
+      color: var(--ps-white);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 10px 12px;
+      outline: none;
+      border-radius: 2px;
+      cursor: pointer;
+      letter-spacing: 0.06em;
+    }
+
+    .filter-select:focus { border-color: var(--ps-teal); }
+
+    .result-count {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ps-muted);
+      letter-spacing: 0.08em;
+      padding: 10px 0;
+      white-space: nowrap;
+    }
+
+    .result-count span { color: var(--ps-teal); }
+
+    /* ─── GRID ─── */
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1px;
+      background: var(--ps-border);
+      border: 1px solid var(--ps-border);
+    }
+
+    /* ─── GAME CARD ─── */
+    .game-card {
+      background: var(--ps-card);
+      padding: 1.25rem;
+      display: flex;
+      gap: 1rem;
+      cursor: pointer;
+      transition: background 0.15s;
+      position: relative;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .game-card:hover { background: #1e1e35; }
+
+    .game-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: transparent;
+      transition: background 0.15s;
+    }
+
+    .game-card:hover::before { background: var(--ps-teal); }
+
+    .card-art {
+      width: 64px;
+      height: 88px;
+      background: var(--ps-panel);
+      border: 1px solid var(--ps-border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 10px;
+      color: var(--ps-muted);
+      text-align: center;
+      overflow: hidden;
+      border-radius: 1px;
+    }
+
+    .card-art img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .card-body {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .card-serial {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ps-teal);
+      letter-spacing: 0.1em;
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--ps-white);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-dev {
+      font-size: 11px;
+      color: var(--ps-muted);
+      font-family: var(--font-mono);
+      letter-spacing: 0.05em;
+    }
+
+    .card-meta {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: auto;
+      padding-top: 8px;
+    }
+
+    .tag {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 1px;
+      border: 1px solid;
+    }
+
+    .tag-genre {
+      color: var(--ps-muted);
+      border-color: var(--ps-border-bright);
+    }
+
+    .tag-status-Complete {
+      color: var(--ps-teal);
+      border-color: var(--ps-teal-dim);
+    }
+
+    .tag-status-Demo {
+      color: var(--ps-yellow);
+      border-color: #776010;
+    }
+
+    .tag-status-Beta {
+      color: #cc88ff;
+      border-color: #553366;
+    }
+
+    .tag-status-WIP {
+      color: var(--ps-muted);
+      border-color: var(--ps-border);
+    }
+
+    /* ─── EMPTY STATE ─── */
+    .empty-state {
+      grid-column: 1/-1;
+      padding: 4rem 2rem;
+      text-align: center;
+    }
+
+    .empty-state p {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--ps-muted);
+      letter-spacing: 0.1em;
+    }
+
+    /* ─── MODAL ─── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.88);
+      z-index: 200;
+      display: none;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--ps-panel);
+      border: 1px solid var(--ps-border-bright);
+      width: 100%;
+      max-width: 960px;
+      position: relative;
+      animation: modal-in 0.18s ease;
+      margin: auto;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 500px;
+    }
+
+    @keyframes modal-in {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* blue/teal top accent line */
+    .modal::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--ps-blue), var(--ps-teal));
+      z-index: 1;
+    }
+
+    /* ─── SIDEBAR ─── */
+    .modal-sidebar {
+      background: var(--ps-card);
+      border-right: 1px solid var(--ps-border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-art {
+      width: 100%;
+      aspect-ratio: 3/4;
+      background: var(--ps-black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ps-muted);
+      text-align: center;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .modal-art img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .modal-sidebar-meta {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border-top: 1px solid var(--ps-border);
+    }
+
+    .modal-actions {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border-top: 1px solid var(--ps-border);
+      margin-top: auto;
+    }
+
+    .modal-actions .btn {
+      width: 100%;
+      text-align: center;
+      display: block;
+    }
+
+    /* ─── MAIN CONTENT ─── */
+    .modal-content {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 1.5rem 1.75rem 1.25rem;
+      border-bottom: 1px solid var(--ps-border);
+      flex-shrink: 0;
+    }
+
+    .modal-serial {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ps-teal);
+      letter-spacing: 0.15em;
+      margin-bottom: 4px;
+    }
+
+    .modal-title {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      letter-spacing: 0.04em;
+      color: var(--ps-white);
+      line-height: 1;
+    }
+
+    .modal-developer {
+      font-size: 11px;
+      color: var(--ps-muted);
+      font-family: var(--font-mono);
+      margin-top: 6px;
+      letter-spacing: 0.06em;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 10px; right: 10px;
+      background: none;
+      border: 1px solid var(--ps-border);
+      color: var(--ps-muted);
+      width: 26px; height: 26px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      border-radius: 1px;
+      z-index: 2;
+    }
+
+    .modal-close:hover { color: var(--ps-white); border-color: var(--ps-white); }
+
+    .modal-scroll {
+      overflow-y: auto;
+      flex: 1;
+      padding: 1.5rem 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .modal-scroll::-webkit-scrollbar { width: 4px; }
+    .modal-scroll::-webkit-scrollbar-track { background: transparent; }
+    .modal-scroll::-webkit-scrollbar-thumb { background: var(--ps-border-bright); }
+
+    .modal-description {
+      font-size: 13px;
+      line-height: 1.75;
+      color: #b0b0cc;
+    }
+
+    /* ─── SECTION HEADINGS ─── */
+    .modal-section-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ps-muted);
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--ps-border);
+    }
+
+    /* ─── INFO TABLE ─── */
+    .modal-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    .modal-table td {
+      padding: 5px 0;
+      border-bottom: 1px solid var(--ps-border);
+    }
+
+    .modal-table td:first-child {
+      color: var(--ps-muted);
+      letter-spacing: 0.08em;
+      padding-right: 1rem;
+      white-space: nowrap;
+      width: 110px;
+    }
+
+    .modal-table td:last-child { color: var(--ps-white); }
+
+    /* ─── SCREENSHOTS ─── */
+    .screenshots-strip {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .screenshots-strip::-webkit-scrollbar { height: 3px; }
+    .screenshots-strip::-webkit-scrollbar-track { background: transparent; }
+    .screenshots-strip::-webkit-scrollbar-thumb { background: var(--ps-border-bright); }
+
+    .screenshot-thumb {
+      flex-shrink: 0;
+      width: 160px;
+      height: 100px;
+      background: var(--ps-black);
+      border: 1px solid var(--ps-border);
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    .screenshot-thumb:hover { border-color: var(--ps-teal); }
+
+    .screenshot-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .screenshot-thumb.no-img {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--ps-border-bright);
+      letter-spacing: 0.08em;
+    }
+
+    /* ─── EMULATOR COMPAT ─── */
+    .emu-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .emu-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 4px 0;
+      border-bottom: 1px solid var(--ps-border);
+    }
+
+    .emu-name { color: var(--ps-muted); letter-spacing: 0.05em; }
+    .emu-status { color: var(--ps-white); }
+    .emu-status.compat-perfect { color: var(--ps-teal); }
+    .emu-status.compat-good { color: var(--ps-yellow); }
+    .emu-status.compat-bad, .emu-status.compat-broken { color: var(--ps-red); }
+    .emu-status.compat-untested { color: var(--ps-muted); }
+
+    /* ─── CREDITS ─── */
+    .credits-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    .credit-row {
+      display: flex;
+      gap: 1rem;
+      padding: 4px 0;
+      border-bottom: 1px solid var(--ps-border);
+    }
+
+    .credit-role {
+      color: var(--ps-muted);
+      letter-spacing: 0.06em;
+      width: 110px;
+      flex-shrink: 0;
+    }
+
+    .credit-names { color: var(--ps-white); }
+
+    /* ─── TAGS ROW ─── */
+    .modal-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    /* sidebar meta table */
+    .sidebar-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 10px;
+    }
+
+    .sidebar-table td {
+      padding: 4px 0;
+      border-bottom: 1px solid var(--ps-border);
+    }
+
+    .sidebar-table td:first-child {
+      color: var(--ps-muted);
+      letter-spacing: 0.06em;
+      padding-right: 8px;
+      white-space: nowrap;
+    }
+
+    .sidebar-table td:last-child { color: var(--ps-white); }
+
+    @media (max-width: 680px) {
+      .modal { grid-template-columns: 1fr; }
+      .modal-sidebar {
+        border-right: none;
+        border-bottom: 1px solid var(--ps-border);
+        flex-direction: row;
+      }
+      .modal-art { aspect-ratio: 1/1; width: 120px; flex-shrink: 0; }
+      .modal-actions { flex-direction: row; flex-wrap: wrap; }
+      .modal-actions .btn { width: auto; }
+    }
+
+    .btn {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 10px 18px;
+      border: 1px solid;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s;
+      border-radius: 1px;
+    }
+
+    .btn-primary {
+      background: var(--ps-blue-dim);
+      border-color: var(--ps-blue);
+      color: white;
+    }
+
+    .btn-primary:hover { background: var(--ps-blue); }
+
+    .btn-ghost {
+      background: transparent;
+      border-color: var(--ps-border-bright);
+      color: var(--ps-muted);
+    }
+
+    .btn-ghost:hover { color: var(--ps-white); border-color: var(--ps-white); }
+
+    /* ─── SUBMIT SECTION ─── */
+    .submit-section {
+      margin-top: 3rem;
+      border: 1px solid var(--ps-border);
+      background: var(--ps-panel);
+      padding: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .submit-section::before {
+      display: none;
+    }
+
+    .submit-icon {
+      font-family: var(--font-display);
+      font-size: 3rem;
+      color: var(--ps-blue);
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .submit-text h2 {
+      font-family: var(--font-display);
+      font-size: 1.75rem;
+      letter-spacing: 0.05em;
+      color: var(--ps-white);
+      margin-bottom: 4px;
+    }
+
+    .submit-text p {
+      font-size: 12px;
+      color: var(--ps-muted);
+      font-family: var(--font-mono);
+      letter-spacing: 0.05em;
+      max-width: 500px;
+      line-height: 1.6;
+    }
+
+    .submit-text p strong {
+      color: var(--ps-teal);
+      font-weight: 400;
+    }
+
+    .submit-btn {
+      margin-left: auto;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      margin-top: 4rem;
+      border-top: 1px solid var(--ps-border);
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: gap;
+      gap: 1rem;
+    }
+
+    .footer-left {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ps-muted);
+      letter-spacing: 0.08em;
+    }
+
+    .footer-right {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ps-muted);
+      letter-spacing: 0.08em;
+    }
+
+    /* ─── LOADING ─── */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ps-teal);
+      letter-spacing: 0.12em;
+      gap: 8px;
+    }
+
+    .loading::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border: 1px solid var(--ps-teal);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 600px) {
+      .topbar-links { display: none; }
+      .hero-graphic { display: none; }
+      .modal-body { grid-template-columns: 1fr; }
+      .modal-art { aspect-ratio: 16/9; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <nav class="topbar">
+    <div class="topbar-left">
+      <span class="serial-badge">PSXD DATABASE</span>
+      <ul class="topbar-links">
+        <li><a href="#games">Games</a></li>
+        <li><a href="#submit">Submit</a></li>
+        <li><a href="#" id="link-serials">Serials</a></li>
+        <li><a href="#" id="link-about">About</a></li>
+      </ul>
+    </div>
+    <a href="#" id="link-github" class="github-link" target="_blank">★ GitHub</a>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-inner">
+      <p class="hero-eyebrow">▶ Community Database ▶ PSX.DEV Homebrew</p>
+      <h1>PSX<span>.DEV</span><br>Homebrew DB</h1>
+      <p class="hero-sub">PSXD // The unofficial registry for PS1 homebrew games</p>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-value" id="stat-total">—</span>
+          <span class="stat-label">Games Listed</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="stat-complete">—</span>
+          <span class="stat-label">Complete Releases</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="stat-developers">—</span>
+          <span class="stat-label">Developers</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-graphic" aria-hidden="true">PSX</div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="main" id="games">
+
+    <div class="controls">
+      <div class="search-wrap">
+        <input
+          type="search"
+          class="search-input"
+          id="search"
+          placeholder="SEARCH TITLE, DEVELOPER, SERIAL..."
+          autocomplete="off"
+        >
+      </div>
+      <select class="filter-select" id="filter-genre">
+        <option value="">ALL GENRES</option>
+      </select>
+      <select class="filter-select" id="filter-status">
+        <option value="">ALL STATUS</option>
+        <option value="Complete">Complete</option>
+        <option value="Demo">Demo</option>
+        <option value="Beta">Beta</option>
+        <option value="Work In Progress">WIP</option>
+      </select>
+      <span class="result-count" id="result-count"></span>
+    </div>
+
+    <div class="games-grid" id="games-grid">
+      <div class="loading" id="loading">LOADING DATABASE...</div>
+    </div>
+
+    <!-- SUBMIT -->
+    <section class="submit-section" id="submit">
+      <div class="submit-icon">+</div>
+      <div class="submit-text">
+        <h2>Submit Your Game</h2>
+        <p>Made a PS1 homebrew? Get it listed with a permanent <strong>PSXD serial number</strong>. Open a GitHub issue with your game info and artwork — a maintainer will review and assign your serial within a few days.</p>
+      </div>
+      <a
+        href="#" id="link-submit"
+        class="btn btn-primary submit-btn"
+        target="_blank"
+      >Open Submission Issue</a>
+    </section>
+
+  </main>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal" id="modal">
+      <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+
+      <!-- LEFT SIDEBAR -->
+      <div class="modal-sidebar">
+        <div class="modal-art" id="modal-art">NO ART<br>SUBMITTED</div>
+        <div class="modal-sidebar-meta" id="modal-sidebar-meta"></div>
+        <div class="modal-actions" id="modal-actions"></div>
+      </div>
+
+      <!-- RIGHT CONTENT -->
+      <div class="modal-content">
+        <div class="modal-header">
+          <p class="modal-serial" id="modal-serial"></p>
+          <h2 class="modal-title" id="modal-title"></h2>
+          <p class="modal-developer" id="modal-developer"></p>
+        </div>
+        <div class="modal-scroll" id="modal-scroll">
+          <p class="modal-description" id="modal-description"></p>
+          <div id="modal-details"></div>
+          <div id="modal-screenshots"></div>
+          <div id="modal-emu"></div>
+          <div id="modal-credits"></div>
+          <div id="modal-links"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    <span class="footer-left">PSXD // PSX.DEV HOMEBREW DATABASE // NOT AFFILIATED WITH SONY COMPUTER ENTERTAINMENT</span>
+    <span class="footer-right">DATA SERVED FROM GITHUB // COMMUNITY MAINTAINED</span>
+  </footer>
+
+  <script>
+    // Custom domain fallback — set this if you use a custom domain e.g. 'myusername/psxdev-homebrew-db'
+    const CUSTOM_REPO = '';
+
+    function getRepoInfo() {
+      const { hostname, pathname } = window.location;
+      if (hostname.endsWith('.github.io')) {
+        return { owner: hostname.replace('.github.io', ''), repo: pathname.split('/')[1] };
+      }
+      if (CUSTOM_REPO) {
+        const [owner, repo] = CUSTOM_REPO.split('/');
+        return { owner, repo };
+      }
+      return { owner: null, repo: null };
+    }
+
+    function getRepoRaw() {
+      const { owner, repo } = getRepoInfo();
+      if (owner && repo) return `https://raw.githubusercontent.com/${owner}/${repo}/main`;
+      return '.'; // local dev fallback
+    }
+
+    function getGithubUrl(path) {
+      const { owner, repo } = getRepoInfo();
+      if (owner && repo) return `https://github.com/${owner}/${repo}/${path}`;
+      return `https://github.com/YOUR_ORG/YOUR_REPO/${path}`;
+    }
+
+    const REPO_RAW = getRepoRaw();
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("link-serials").href = getGithubUrl("blob/main/SERIAL_FORMAT.md");
+      document.getElementById("link-about").href   = getGithubUrl("");
+      document.getElementById("link-github").href  = getGithubUrl("issues/new/choose");
+      document.getElementById("link-submit").href  = getGithubUrl("issues/new?template=game-submission.yml");
+    });
+    const GAMES_INDEX = `${REPO_RAW}/games.json`;
+    const GAME_FILE = (slug) => `${REPO_RAW}/games/${slug}.json`;
+
+    let allGames = [];
+
+    function statusClass(s) {
+      return 'tag-status-' + (s || 'WIP').replace(/\s+/g, '');
+    }
+
+    function renderCard(game) {
+      const genres = (game.genre || []).slice(0,2).map(g =>
+        `<span class="tag tag-genre">${g}</span>`
+      ).join('');
+      return `
+        <div class="game-card" data-serial="${game.serial}" tabindex="0" role="button" aria-label="View ${game.title}">
+          <div class="card-art">
+            ${game.thumbnail
+              ? `<img src="${REPO_RAW}/${game.thumbnail}" alt="${game.title} boxart" loading="lazy">`
+              : 'NO<br>ART'
+            }
+          </div>
+          <div class="card-body">
+            <span class="card-serial">${game.serial}</span>
+            <span class="card-title">${game.title}</span>
+            <span class="card-dev">${game.developer} · ${game.year}</span>
+            <div class="card-meta">
+              <span class="tag ${statusClass(game.status)}">${game.status || 'WIP'}</span>
+              ${genres}
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function renderGrid(games) {
+      const grid = document.getElementById('games-grid');
+      if (!games.length) {
+        const isFiltered = allGames.length > 0;
+        if (isFiltered) {
+          grid.innerHTML = `<div class="empty-state"><p>NO GAMES FOUND // ADJUST FILTERS</p></div>`;
+        } else {
+          const submitUrl = getGithubUrl('issues/new?template=game-submission.yml');
+          grid.innerHTML = `<div class="empty-state">
+            <p style="color:var(--ps-white);font-size:13px;margin-bottom:12px;">NO GAMES LISTED YET</p>
+            <p>Be the first to submit a homebrew game.</p>
+            <p style="margin-top:16px;">
+              <a href="${submitUrl}"
+                 style="color:var(--ps-teal);text-decoration:none;border-bottom:1px solid var(--ps-teal-dim);"
+                 target="_blank">OPEN A SUBMISSION ISSUE ▶</a>
+            </p>
+          </div>`;
+        }
+      } else {
+        grid.innerHTML = games.map(renderCard).join('');
+        grid.querySelectorAll('.game-card').forEach(card => {
+          card.addEventListener('click', () => openModal(card.dataset.serial));
+          card.addEventListener('keydown', e => {
+            if (e.key === 'Enter') openModal(card.dataset.serial);
+          });
+        });
+      }
+      document.getElementById('result-count').innerHTML =
+        `<span>${games.length}</span> / ${allGames.length} TITLES`;
+    }
+
+    function filterGames() {
+      const q = document.getElementById('search').value.toLowerCase();
+      const genre = document.getElementById('filter-genre').value;
+      const status = document.getElementById('filter-status').value;
+      return allGames.filter(g => {
+        const matchQ = !q || [g.title, g.developer, g.serial, ...(g.genre||[])]
+          .some(s => (s||'').toLowerCase().includes(q));
+        const matchGenre = !genre || (g.genre||[]).includes(genre);
+        const matchStatus = !status || g.status === status;
+        return matchQ && matchGenre && matchStatus;
+      });
+    }
+
+    async function openModal(serial) {
+      const game = allGames.find(g => g.serial === serial);
+      if (!game) return;
+
+      // Reset
+      document.getElementById('modal-serial').textContent = game.serial;
+      document.getElementById('modal-title').textContent = game.title;
+      document.getElementById('modal-developer').textContent = `${game.developer} // ${game.year}`;
+      document.getElementById('modal-art').innerHTML = 'LOADING...';
+      document.getElementById('modal-description').textContent = '';
+      document.getElementById('modal-sidebar-meta').innerHTML = '';
+      document.getElementById('modal-actions').innerHTML = '';
+      document.getElementById('modal-details').innerHTML = '';
+      document.getElementById('modal-screenshots').innerHTML = '';
+      document.getElementById('modal-emu').innerHTML = '';
+      document.getElementById('modal-credits').innerHTML = '';
+      document.getElementById('modal-links').innerHTML = '';
+      document.getElementById('modal-scroll').scrollTop = 0;
+
+      document.getElementById('modal-overlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+
+      try {
+        const res = await fetch(`${REPO_RAW}/games/${game.serial}.json`);
+        if (!res.ok) throw new Error('No detail file');
+        const d = await res.json();
+
+        // ── BOXART ──
+        const artEl = document.getElementById('modal-art');
+        artEl.innerHTML = (d.boxart && d.boxart.front)
+          ? `<img src="${REPO_RAW}/${d.boxart.front}" alt="${d.title} front cover">`
+          : 'NO ART<br>SUBMITTED';
+
+        // ── SIDEBAR META ──
+        const sidebarRows = [
+          ['Serial',   d.serial],
+          ['Status',   d.status],
+          ['Players',  d.players || '1'],
+          ['Region',   d.region || 'Worldwide'],
+          ['Language', (d.language||[]).join(', ')],
+          ['Version',  d.version],
+          ['Format',   (d.disc_image_format||[]).join(', ')],
+          ['Released', d.release_date || d.year],
+        ].filter(r => r[1]);
+
+        document.getElementById('modal-sidebar-meta').innerHTML = `
+          <table class="sidebar-table">
+            ${sidebarRows.map(([k,v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}
+          </table>
+          <div class="modal-tags" style="margin-top:8px;">
+            <span class="tag ${statusClass(d.status)}">${d.status}</span>
+            ${(d.genre||[]).map(g => `<span class="tag tag-genre">${g}</span>`).join('')}
+          </div>`;
+
+        // ── ACTION BUTTONS ──
+        const actions = [];
+        if (d.download_url) actions.push(
+          `<a href="${d.download_url}" class="btn btn-primary" target="_blank">▶ Download</a>`
+        );
+        if (d.source_url) actions.push(
+          `<a href="${d.source_url}" class="btn btn-ghost" target="_blank">Source Code</a>`
+        );
+        if (d.links && d.links.itch_io) actions.push(
+          `<a href="${d.links.itch_io}" class="btn btn-ghost" target="_blank">itch.io</a>`
+        );
+        if (d.links && d.links.website) actions.push(
+          `<a href="${d.links.website}" class="btn btn-ghost" target="_blank">Website</a>`
+        );
+        if (d.links && d.links.discord) actions.push(
+          `<a href="${d.links.discord}" class="btn btn-ghost" target="_blank">Discord</a>`
+        );
+        document.getElementById('modal-actions').innerHTML = actions.join('');
+
+        // ── DESCRIPTION ──
+        document.getElementById('modal-description').textContent =
+          d.description || 'No description available.';
+
+        // ── DETAILS TABLE ──
+        const detailRows = [
+          ['Developer',  d.developer],
+          ['Publisher',  d.publisher !== d.developer ? d.publisher : null],
+          ['Genre',      (d.genre||[]).join(', ')],
+          ['Hardware',   d.hardware_tested ? (d.hardware_notes || 'Tested on real hardware') : 'Not tested on hardware'],
+          ['Submitted',  d.submitted_by ? `${d.submitted_by} · ${d.submission_date||''}` : null],
+          ['Updated',    d.last_updated],
+        ].filter(r => r[1]);
+
+        document.getElementById('modal-details').innerHTML = `
+          <p class="modal-section-label">Details</p>
+          <table class="modal-table">
+            ${detailRows.map(([k,v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}
+          </table>`;
+
+        // ── SCREENSHOTS ──
+        const shots = d.screenshots || [];
+        if (shots.length) {
+          const thumbs = shots.map(s => `
+            <div class="screenshot-thumb">
+              <img src="${REPO_RAW}/${s}" alt="Screenshot" loading="lazy">
+            </div>`).join('');
+          document.getElementById('modal-screenshots').innerHTML = `
+            <p class="modal-section-label">Screenshots</p>
+            <div class="screenshots-strip">${thumbs}</div>`;
+        }
+
+        // ── EMULATOR COMPAT ──
+        const emu = d.emulator_compatibility || {};
+        const emuKeys = Object.keys(emu);
+        if (emuKeys.length) {
+          const emuLabels = {
+            duckstation: 'DuckStation',
+            pcsx_redux: 'PCSX-Redux',
+          };
+          const rows = emuKeys.map(k => {
+            const val = emu[k];
+            const cls = 'compat-' + val.toLowerCase().replace(/\s+/g, '-');
+            const label = emuLabels[k] || k;
+            return `<div class="emu-row">
+              <span class="emu-name">${label}</span>
+              <span class="emu-status ${cls}">${val}</span>
+            </div>`;
+          }).join('');
+          document.getElementById('modal-emu').innerHTML = `
+            <p class="modal-section-label">Emulator Compatibility</p>
+            <div class="emu-list">${rows}</div>`;
+        }
+
+        // ── CREDITS ──
+        const credits = d.credits || {};
+        const creditKeys = Object.keys(credits);
+        if (creditKeys.length) {
+          const rows = creditKeys.map(role => {
+            const names = Array.isArray(credits[role]) ? credits[role].join(', ') : credits[role];
+            return `<div class="credit-row">
+              <span class="credit-role">${role}</span>
+              <span class="credit-names">${names}</span>
+            </div>`;
+          }).join('');
+          document.getElementById('modal-credits').innerHTML = `
+            <p class="modal-section-label">Credits</p>
+            <div class="credits-grid">${rows}</div>`;
+        }
+
+        // ── TAGS ──
+        const tags = (d.tags||[]);
+        if (tags.length) {
+          document.getElementById('modal-links').innerHTML = `
+            <div class="modal-tags">
+              ${tags.map(t => `<span class="tag tag-genre">${t}</span>`).join('')}
+            </div>`;
+        }
+
+      } catch {
+        // Fallback to index data
+        document.getElementById('modal-art').innerHTML = 'NO ART<br>SUBMITTED';
+        document.getElementById('modal-description').textContent = game.description || 'No description available.';
+        document.getElementById('modal-sidebar-meta').innerHTML = `
+          <table class="sidebar-table">
+            <tr><td>Serial</td><td>${game.serial}</td></tr>
+            <tr><td>Status</td><td>${game.status || '—'}</td></tr>
+            <tr><td>Genre</td><td>${(game.genre||[]).join(', ') || '—'}</td></tr>
+          </table>
+          <div class="modal-tags" style="margin-top:8px;">
+            <span class="tag ${statusClass(game.status)}">${game.status || 'WIP'}</span>
+            ${(game.genre||[]).map(g => `<span class="tag tag-genre">${g}</span>`).join('')}
+          </div>`;
+        document.getElementById('modal-details').innerHTML = `
+          <p class="modal-section-label">Details</p>
+          <table class="modal-table">
+            <tr><td>Developer</td><td>${game.developer}</td></tr>
+            <tr><td>Year</td><td>${game.year}</td></tr>
+          </table>`;
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('modal-overlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    document.getElementById('modal-close').addEventListener('click', closeModal);
+    document.getElementById('modal-overlay').addEventListener('click', e => {
+      if (e.target === document.getElementById('modal-overlay')) closeModal();
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    async function init() {
+      try {
+        const res = await fetch(GAMES_INDEX);
+        const data = await res.json();
+        allGames = data.games || [];
+
+        // Stats
+        document.getElementById('stat-total').textContent = allGames.length;
+        document.getElementById('stat-complete').textContent =
+          allGames.filter(g => g.status === 'Complete').length;
+        document.getElementById('stat-developers').textContent =
+          new Set(allGames.map(g => g.developer)).size;
+
+        // Genre filter
+        const genres = [...new Set(allGames.flatMap(g => g.genre||[]))].sort();
+        const sel = document.getElementById('filter-genre');
+        genres.forEach(g => {
+          const opt = document.createElement('option');
+          opt.value = g; opt.textContent = g;
+          sel.appendChild(opt);
+        });
+
+        document.getElementById('loading').remove();
+        renderGrid(allGames);
+
+        document.getElementById('search').addEventListener('input', () => renderGrid(filterGames()));
+        document.getElementById('filter-genre').addEventListener('change', () => renderGrid(filterGames()));
+        document.getElementById('filter-status').addEventListener('change', () => renderGrid(filterGames()));
+
+      } catch (err) {
+        document.getElementById('loading').textContent = 'ERROR LOADING DATABASE // CHECK CONSOLE';
+        console.error(err);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
