@@ -357,7 +357,7 @@ jobs:
             };
 
             // upsert (idempotent)
-            index.games = index.games.filter(g => g.serial !== game.serial);
+            index.games = index.games.filter(g => g.serial !== json.serial);
             index.games.push(entry);
 
             index.total_games = index.games.length;
