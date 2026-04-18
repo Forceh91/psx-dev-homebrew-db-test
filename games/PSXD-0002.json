@@ -1,0 +1,47 @@
+{
+  "serial": "PSXD-0002",
+  "title": "Test",
+  "slug": "test",
+  "developer": "Test",
+  "publisher": "Test",
+  "year": 2026,
+  "genre": [
+    "Horror"
+  ],
+  "players": "1",
+  "status": "Complete",
+  "description": "This is a game, what happens!?",
+  "download_url": "https://github.com/forceh91/psyqo-madnight-engine",
+  "source_url": null,
+  "disc_image_format": [
+    "BIN/CUE",
+    "ISO",
+    "PBP (PSP/Vita)",
+    "CHD"
+  ],
+  "emulator_compatibility": {
+    "duckstation": "Perfect",
+    "pcsx_redux": "Perfect"
+  },
+  "hardware_tested": false,
+  "hardware_notes": null,
+  "credits": {
+    "progamming": [
+      "John"
+    ],
+    "art": [
+      "Smith"
+    ]
+  },
+  "links": {
+    "website": null,
+    "discord": null,
+    "itch_io": null
+  },
+  "screenshots": [],
+  "boxart": {},
+  "tags": [],
+  "submitted_by": "Forceh91",
+  "submission_date": "2026-04-18",
+  "last_updated": "2026-04-18"
+}
